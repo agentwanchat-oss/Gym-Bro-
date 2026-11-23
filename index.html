@@ -31,38 +31,18 @@
             }
         }
     </script>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: 'Kanit', 'Inter', sans-serif;
-            background-color: #0F1115;
-            color: #F3F4F6;
-        }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #181C24;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #2A303C;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00E676;
-        }
-        .gauge-circle {
-            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        body { font-family: 'Kanit', 'Inter', sans-serif; background-color: #0F1115; color: #F3F4F6; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #181C24; }
+        ::-webkit-scrollbar-thumb { background: #2A303C; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00E676; }
+        .gauge-circle { transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-[#0F1115] text-slate-100 antialiased selection:bg-[#00E676] selection:text-black">
@@ -77,7 +57,10 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="font-bold text-lg leading-tight tracking-wide">COUPE <span class="text-[#00E676]">PT</span> x KHEM</h1>
-                        <span class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/30 rounded-full">WHOOP OPTIMIZED</span>
+                        <span id="whoopSyncStatusBadge" class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/30 rounded-full flex items-center gap-1">
+                            <span id="whoopPingDot" class="w-1.5 h-1.5 rounded-full bg-[#00E676] animate-pulse"></span>
+                            WHOOP OPTIMIZED
+                        </span>
                     </div>
                     <p class="text-xs text-[#8A95A5]">Village Gym Hypertrophy & Recomp Engine</p>
                 </div>
@@ -85,6 +68,13 @@
 
             <!-- Header Quick Stats & Actions -->
             <div class="flex items-center gap-3">
+                <!-- 1-Click Whoop OAuth Button -->
+                <a href="https://api.prod.whoop.com/oauth/oauth2/auth?response_type=token&client_id=d655fe77-f83d-4ac4-8cfb-916858b15376&redirect_uri=https%3A%2F%2Fagentwanchat-oss.github.io%2FGym-Bro-%2F&scope=read%3Arecovery%20read%3Acycles%20read%3Asleep%20read%3Aworkout%20read%3Aprofile&state=khem_coupe_pt_2026" 
+                   class="px-3 py-1.5 bg-[#00E676]/10 hover:bg-[#00E676]/20 border border-[#00E676]/40 text-[#00E676] rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-[#00E676]/10">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                    <span>เชื่อมต่อ Whoop Realtime</span>
+                </a>
+
                 <!-- Whoop Quick Recovery Pill -->
                 <div id="topWhoopBadge" class="hidden sm:flex items-center gap-2 bg-[#0F1115] border border-[#2A303C] rounded-lg px-3 py-1.5 text-xs font-semibold">
                     <span class="text-[#8A95A5]">Recovery:</span>
@@ -92,13 +82,10 @@
                     <span id="topRecoveryDot" class="w-2.5 h-2.5 rounded-full bg-[#00E676] animate-pulse"></span>
                 </div>
 
-                <!-- Theme Switcher Modal Trigger -->
-                <button onclick="toggleThemeModal()" class="p-2 bg-[#2A303C]/50 hover:bg-[#2A303C] border border-[#2A303C] rounded-lg text-slate-300 hover:text-white transition flex items-center gap-1.5 text-xs" title="เปลี่ยนธีม">
+                <button onclick="toggleThemeModal()" class="p-2 bg-[#2A303C]/50 hover:bg-[#2A303C] border border-[#2A303C] rounded-lg text-slate-300 hover:text-white transition flex items-center gap-1.5 text-xs">
                     <i data-lucide="palette" class="w-4 h-4 text-[#00E676]"></i>
-                    <span class="hidden md:inline">ธีม</span>
                 </button>
 
-                <!-- Data Backup / Export Button -->
                 <button onclick="exportData()" class="p-2 bg-[#2A303C]/50 hover:bg-[#2A303C] border border-[#2A303C] rounded-lg text-slate-300 hover:text-white transition" title="Backup ข้อมูล JSON">
                     <i data-lucide="download" class="w-4 h-4"></i>
                 </button>
@@ -138,14 +125,13 @@
         <!-- ==================== TAB 1: WHOOP DASHBOARD ==================== -->
         <section id="content-dashboard" class="tab-content space-y-6">
             
-            <!-- Whoop Daily Input & Status Banner -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Whoop Score Entry Card -->
+                <!-- Whoop Manual Entry & Status Card -->
                 <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
                             <i data-lucide="zap" class="w-5 h-5 text-[#00E676]"></i>
-                            <h2 class="font-bold text-base">บันทึกค่า WHOOP วันนี้</h2>
+                            <h2 class="font-bold text-base">บันทึก / สถานะ WHOOP วันนี้</h2>
                         </div>
                         <span class="text-xs text-[#8A95A5]" id="currentDateStr">วันนี้</span>
                     </div>
@@ -189,7 +175,7 @@
 
                         <button type="submit" class="w-full py-2.5 bg-[#00E676] hover:bg-[#00B359] text-black font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-[#00E676]/20">
                             <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-                            อัปเดตสถานะ Whoop
+                            บันทึกสถานะ Whoop
                         </button>
                     </form>
                 </div>
@@ -246,7 +232,6 @@
                             </div>
                         </div>
 
-                        <!-- Dynamic Directive Box -->
                         <div id="coupeDirectiveBox" class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-4 space-y-2 mb-4">
                             <div class="flex items-center gap-2 text-xs font-bold text-[#00E676]">
                                 <i data-lucide="flame" class="w-4 h-4"></i>
@@ -258,7 +243,6 @@
                         </div>
                     </div>
 
-                    <!-- Suggested Daily Volume / Intensity -->
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs">
                             <span class="text-[#8A95A5]">Workout Intensity Target:</span>
@@ -271,7 +255,7 @@
                 </div>
             </div>
 
-            <!-- Quick Access Summary Cards (4 Columns) -->
+            <!-- Quick Access Summary Cards -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-[#181C24] border border-[#2A303C] rounded-xl p-4 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-[#00E5FF]/10 text-[#00E5FF] flex items-center justify-center">
@@ -322,7 +306,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Day 1 -->
                     <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-4 hover:border-[#00E676]/50 transition cursor-pointer" onclick="selectDayWorkout('dayA')">
                         <div class="flex items-center justify-between mb-2">
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-[#00E676]/10 text-[#00E676] rounded">DAY A</span>
@@ -330,15 +313,7 @@
                         </div>
                         <h3 class="font-bold text-sm mb-1 text-slate-100">Chest, Shoulders & Triceps</h3>
                         <p class="text-xs text-[#8A95A5] mb-3">อก อกบน ไหล่หนา หลังแขน</p>
-                        <div class="text-[11px] text-slate-400 space-y-1 border-t border-[#2A303C] pt-2">
-                            <div>• DB Incline Press (3x8-12)</div>
-                            <div>• DB Flat Press / Floor Press (3x8-12)</div>
-                            <div>• DB Shoulder Press (3x10-12)</div>
-                            <div>• Cable/DB Lateral Raise (4x12-15)</div>
-                        </div>
                     </div>
-
-                    <!-- Day 2 -->
                     <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-4 hover:border-[#00E676]/50 transition cursor-pointer" onclick="selectDayWorkout('dayB')">
                         <div class="flex items-center justify-between mb-2">
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-[#00E5FF]/10 text-[#00E5FF] rounded">DAY B</span>
@@ -346,15 +321,7 @@
                         </div>
                         <h3 class="font-bold text-sm mb-1 text-slate-100">Back, Rear Delt & Biceps</h3>
                         <p class="text-xs text-[#8A95A5] mb-3">หลังกว้าง ปีก หลังแท้ หน้าแขน</p>
-                        <div class="text-[11px] text-slate-400 space-y-1 border-t border-[#2A303C] pt-2">
-                            <div>• Lat Pulldown / Chin-ups (4x8-12)</div>
-                            <div>• Single-Arm DB Row (3x8-12)</div>
-                            <div>• Face Pulls / Rear Delt Fly (3x12-15)</div>
-                            <div>• DB Bicep Curl (3x10-12)</div>
-                        </div>
                     </div>
-
-                    <!-- Day 3 -->
                     <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-4 hover:border-[#00E676]/50 transition cursor-pointer" onclick="selectDayWorkout('dayC')">
                         <div class="flex items-center justify-between mb-2">
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-[#FFD600]/10 text-[#FFD600] rounded">DAY C</span>
@@ -362,15 +329,7 @@
                         </div>
                         <h3 class="font-bold text-sm mb-1 text-slate-100">Quads, Hamstrings & Abs</h3>
                         <p class="text-xs text-[#8A95A5] mb-3">ต้นขาหน้า ขาหลัง น่อง หน้าท้อง</p>
-                        <div class="text-[11px] text-slate-400 space-y-1 border-t border-[#2A303C] pt-2">
-                            <div>• DB Goblet Squat (4x8-12)</div>
-                            <div>• DB Bulgarian Split Squat (3x10-12)</div>
-                            <div>• DB Romanian Deadlift (3x10-12)</div>
-                            <div>• Hanging Leg Raise / Plank (3xMax)</div>
-                        </div>
                     </div>
-
-                    <!-- Day 4 -->
                     <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-4 hover:border-[#00E676]/50 transition cursor-pointer" onclick="selectDayWorkout('dayD')">
                         <div class="flex items-center justify-between mb-2">
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-[#FF3D00]/10 text-[#FF3D00] rounded">DAY D</span>
@@ -378,21 +337,13 @@
                         </div>
                         <h3 class="font-bold text-sm mb-1 text-slate-100">Upper Body Sculpt & Arms</h3>
                         <p class="text-xs text-[#8A95A5] mb-3">เน้นจุดรับสายตา แขน ไหล่ อกบน</p>
-                        <div class="text-[11px] text-slate-400 space-y-1 border-t border-[#2A303C] pt-2">
-                            <div>• Incline DB Fly / Cable Fly (3x12-15)</div>
-                            <div>• DB Hammer Curls (3x10-12)</div>
-                            <div>• Cable Overhead Triceps (3x12-15)</div>
-                            <div>• High Volume Lateral Raise (4x15-20)</div>
-                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== TAB 2: WORKOUT HUB & SET LOGGER ==================== -->
+        <!-- ==================== TAB 2: WORKOUT HUB ==================== -->
         <section id="content-workout" class="tab-content hidden space-y-6">
-            
-            <!-- Workout Header Selector & Rest Timer -->
             <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                     <h2 class="font-bold text-lg text-white flex items-center gap-2">
@@ -401,36 +352,27 @@
                     </h2>
                     <p class="text-xs text-[#8A95A5]">เลือกตารางซ้อมประจำวัน แล้วบันทึกน้ำหนัก + จำนวนครั้งเพื่อคำนวณ Progressive Overload</p>
                 </div>
-
-                <!-- Select Day Dropdown -->
                 <div class="flex items-center gap-3 w-full md:w-auto">
-                    <select id="workoutDaySelect" onchange="renderWorkoutLogger()" class="bg-[#0F1115] border border-[#2A303C] text-slate-100 rounded-xl px-4 py-2 text-sm font-semibold focus:outline-none focus:border-[#00E676] w-full md:w-auto">
+                    <select id="workoutDaySelect" onchange="renderWorkoutLogger()" class="bg-[#0F1115] border border-[#2A303C] text-slate-100 rounded-xl px-4 py-2 text-sm font-semibold focus:outline-none focus:border-[#00E676]">
                         <option value="dayA">DAY A: Chest, Shoulders & Triceps (Push)</option>
                         <option value="dayB">DAY B: Back, Rear Delt & Biceps (Pull)</option>
                         <option value="dayC">DAY C: Legs, Hamstrings & Abs (Legs)</option>
                         <option value="dayD">DAY D: Upper Body Sculpt & Arms (Arms)</option>
                     </select>
-
-                    <!-- Rest Timer Button -->
-                    <button onclick="toggleRestTimer()" class="px-4 py-2 bg-[#2A303C] hover:bg-[#2A303C]/80 text-[#00E676] rounded-xl font-semibold text-sm flex items-center gap-2 border border-[#2A303C]">
-                        <i data-lucide="timer" class="w-4 h-4"></i>
-                        <span id="timerBtnText">พักเซ็ต 90s</span>
+                    <button onclick="toggleRestTimer()" class="px-4 py-2 bg-[#2A303C] text-[#00E676] rounded-xl font-semibold text-sm flex items-center gap-2">
+                        <i data-lucide="timer" class="w-4 h-4"></i> พักเซ็ต 90s
                     </button>
                 </div>
             </div>
 
-            <!-- Active Workout Routine Card container -->
-            <div id="workoutExerciseContainer" class="space-y-6">
-                <!-- Exercises dynamically rendered by JS -->
-            </div>
+            <div id="workoutExerciseContainer" class="space-y-6"></div>
 
-            <!-- Workout Completion Action -->
             <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 flex items-center justify-between">
                 <div>
                     <h4 class="font-bold text-sm text-slate-200">เสร็จสิ้นการซ้อมประจำวัน?</h4>
                     <p class="text-xs text-[#8A95A5]">ระบบจะบันทึก Total Volume (kg) เข้าในกราฟ Analytics โดยอัตโนมัติ</p>
                 </div>
-                <button onclick="finishTodayWorkout()" class="px-6 py-3 bg-gradient-to-r from-[#00E676] to-[#00E5FF] text-black font-extrabold rounded-xl text-sm hover:opacity-90 transition shadow-lg shadow-[#00E676]/20 flex items-center gap-2">
+                <button onclick="finishTodayWorkout()" class="px-6 py-3 bg-gradient-to-r from-[#00E676] to-[#00E5FF] text-black font-extrabold rounded-xl text-sm flex items-center gap-2">
                     <i data-lucide="trophy" class="w-4 h-4"></i>
                     บันทึกการซ้อมวันปัจจุบัน
                 </button>
@@ -439,302 +381,51 @@
 
         <!-- ==================== TAB 3: MACRO & NUTRITION ==================== -->
         <section id="content-nutrition" class="tab-content hidden space-y-6">
-            
-            <!-- TDEE & Macro Target Summary -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Macro Goals Ring & Summary -->
                 <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 space-y-4">
                     <div class="flex items-center justify-between">
-                        <h3 class="font-bold text-base flex items-center gap-2">
-                            <i data-lucide="pie-chart" class="w-5 h-5 text-[#00E676]"></i>
-                            เป้าหมายสารอาหาร (Recomp Target)
-                        </h3>
+                        <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="pie-chart" class="w-5 h-5 text-[#00E676]"></i> เป้าหมายสารอาหาร</h3>
                         <span class="text-xs bg-[#00E676]/10 text-[#00E676] px-2 py-0.5 rounded font-bold">2,200 kcal</span>
                     </div>
-
                     <div class="space-y-3">
-                        <!-- Protein Bar -->
                         <div>
-                            <div class="flex justify-between text-xs font-semibold mb-1">
-                                <span class="text-slate-300">โปรตีน (Protein) - 2.0g/kg</span>
-                                <span id="protTrackerText" class="text-[#00E676]">110g / 160g</span>
-                            </div>
-                            <div class="w-full bg-[#0F1115] h-2.5 rounded-full overflow-hidden border border-[#2A303C]">
-                                <div id="protBar" class="bg-[#00E676] h-full w-[68%] transition-all"></div>
-                            </div>
+                            <div class="flex justify-between text-xs font-semibold mb-1"><span>โปรตีน (Protein) - 2.0g/kg</span><span id="protTrackerText" class="text-[#00E676]">110g / 160g</span></div>
+                            <div class="w-full bg-[#0F1115] h-2.5 rounded-full overflow-hidden border border-[#2A303C]"><div id="protBar" class="bg-[#00E676] h-full w-[68%]"></div></div>
                         </div>
-
-                        <!-- Carbs Bar -->
-                        <div>
-                            <div class="flex justify-between text-xs font-semibold mb-1">
-                                <span class="text-slate-300">คาร์โบไฮเดรต (Carbs)</span>
-                                <span id="carbTrackerText" class="text-[#00E5FF]">140g / 220g</span>
-                            </div>
-                            <div class="w-full bg-[#0F1115] h-2.5 rounded-full overflow-hidden border border-[#2A303C]">
-                                <div id="carbBar" class="bg-[#00E5FF] h-full w-[63%] transition-all"></div>
-                            </div>
-                        </div>
-
-                        <!-- Fat Bar -->
-                        <div>
-                            <div class="flex justify-between text-xs font-semibold mb-1">
-                                <span class="text-slate-300">ไขมันดี (Fats)</span>
-                                <span id="fatTrackerText" class="text-[#FFD600]">42g / 65g</span>
-                            </div>
-                            <div class="w-full bg-[#0F1115] h-2.5 rounded-full overflow-hidden border border-[#2A303C]">
-                                <div id="fatBar" class="bg-[#FFD600] h-full w-[64%] transition-all"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Water Intake Tracker -->
-                    <div class="pt-3 border-t border-[#2A303C] flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="droplet" class="w-4 h-4 text-[#00E5FF]"></i>
-                            <span class="text-xs text-slate-300 font-semibold">ดื่มน้ำวันนี้:</span>
-                            <span id="waterText" class="text-xs font-bold text-[#00E5FF]">2.5 / 3.5 ลิตร</span>
-                        </div>
-                        <button onclick="addWater(0.5)" class="px-3 py-1 bg-[#00E5FF]/10 text-[#00E5FF] hover:bg-[#00E5FF]/20 rounded-lg text-xs font-bold transition">+ 500 ml</button>
                     </div>
                 </div>
-
-                <!-- Meal Entry Form -->
                 <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 lg:col-span-2 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-bold text-base flex items-center gap-2">
-                            <i data-lucide="plus-circle" class="w-5 h-5 text-[#00E676]"></i>
-                            บันทึกมื้ออาหารวันนี้ (Daily Meal Logger)
-                        </h3>
-                        <span class="text-xs text-[#8A95A5]">เน้นสารอาหารคุณภาพสูงในการสร้างกล้ามเนื้อ</span>
-                    </div>
-
+                    <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="plus-circle" class="w-5 h-5 text-[#00E676]"></i> บันทึกมื้ออาหารวันนี้</h3>
                     <form id="mealForm" onsubmit="addMealEntry(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <div class="md:col-span-2">
-                            <label class="text-xs text-[#8A95A5] block mb-1">ชื่อมื้ออาหาร / เมนู</label>
-                            <input type="text" id="mealName" placeholder="เช่น สลัดอกไก่ย่าง Chub Chub + ข้าวกล้อง" required
-                                class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-[#00E676]">
-                        </div>
-                        <div>
-                            <label class="text-xs text-[#8A95A5] block mb-1">โปรตีน (g)</label>
-                            <input type="number" id="mealProt" placeholder="45" required
-                                class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-[#00E676]">
-                        </div>
-                        <div>
-                            <label class="text-xs text-[#8A95A5] block mb-1">แคลอรี (kcal)</label>
-                            <input type="number" id="mealKcal" placeholder="550" required
-                                class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-[#00E676]">
-                        </div>
-                        <div class="md:col-span-4 flex justify-end">
-                            <button type="submit" class="px-5 py-2 bg-[#00E676] hover:bg-[#00B359] text-black font-bold rounded-xl text-sm transition flex items-center gap-2">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                                เพิ่มมื้ออาหาร
-                            </button>
-                        </div>
+                        <input type="text" id="mealName" placeholder="เมนูอาหาร" required class="md:col-span-2 bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm">
+                        <input type="number" id="mealProt" placeholder="โปรตีน (g)" required class="bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm">
+                        <input type="number" id="mealKcal" placeholder="แคลอรี (kcal)" required class="bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm">
+                        <button type="submit" class="md:col-span-4 py-2 bg-[#00E676] text-black font-bold rounded-xl text-sm">เพิ่มมื้ออาหาร</button>
                     </form>
-
-                    <!-- Meal List Table -->
-                    <div class="overflow-x-auto pt-2 border-t border-[#2A303C]">
-                        <table class="w-full text-left text-xs">
-                            <thead>
-                                <tr class="text-[#8A95A5] border-b border-[#2A303C]">
-                                    <th class="pb-2">เวลา / มื้อ</th>
-                                    <th class="pb-2">รายการอาหาร</th>
-                                    <th class="pb-2">โปรตีน</th>
-                                    <th class="pb-2">แคลอรี</th>
-                                    <th class="pb-2 text-right">ลบ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="mealTableBody" class="divide-y divide-[#2A303C]/50 text-slate-300">
-                                <!-- Rendered dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TDEE & Macro Calculator Widget -->
-            <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 space-y-4">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="calculator" class="w-5 h-5 text-[#00E5FF]"></i>
-                    <h3 class="font-bold text-base">คำนวณ TDEE & Target Macro สำหรับคุณเข้ม</h3>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="text-xs text-[#8A95A5] block mb-1">น้ำหนักตัว (kg)</label>
-                        <input type="number" id="calcWeight" value="75" onchange="calculateMacros()" class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 font-bold focus:outline-none focus:border-[#00E676]">
-                    </div>
-                    <div>
-                        <label class="text-xs text-[#8A95A5] block mb-1">ส่วนสูง (cm)</label>
-                        <input type="number" id="calcHeight" value="175" onchange="calculateMacros()" class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 font-bold focus:outline-none focus:border-[#00E676]">
-                    </div>
-                    <div>
-                        <label class="text-xs text-[#8A95A5] block mb-1">อายุ (ปี)</label>
-                        <input type="number" id="calcAge" value="30" onchange="calculateMacros()" class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 font-bold focus:outline-none focus:border-[#00E676]">
-                    </div>
-                    <div>
-                        <label class="text-xs text-[#8A95A5] block mb-1">ระดับกิจกรรม</label>
-                        <select id="calcActivity" onchange="calculateMacros()" class="w-full bg-[#0F1115] border border-[#2A303C] text-slate-100 rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:border-[#00E676]">
-                            <option value="1.375">ซ้อม 3-4 วัน/สัปดาห์ (Light-Moderate Active)</option>
-                            <option value="1.55">ซ้อม 5-6 วัน/สัปดาห์ (Very Active)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#0F1115] p-4 rounded-xl border border-[#2A303C] text-center">
-                    <div>
-                        <span class="text-[10px] text-[#8A95A5] uppercase font-bold block">BMR</span>
-                        <span id="resBMR" class="text-base font-extrabold text-slate-200">1,720 kcal</span>
-                    </div>
-                    <div>
-                        <span class="text-[10px] text-[#8A95A5] uppercase font-bold block">TDEE (Maintain)</span>
-                        <span id="resTDEE" class="text-base font-extrabold text-[#00E5FF]">2,365 kcal</span>
-                    </div>
-                    <div>
-                        <span class="text-[10px] text-[#8A95A5] uppercase font-bold block">Recomp Target</span>
-                        <span id="resTargetKcal" class="text-base font-extrabold text-[#00E676]">2,200 kcal</span>
-                    </div>
-                    <div>
-                        <span class="text-[10px] text-[#8A95A5] uppercase font-bold block">Target Protein</span>
-                        <span id="resTargetProt" class="text-base font-extrabold text-[#FFD600]">150 g/day</span>
-                    </div>
+                    <table class="w-full text-left text-xs"><tbody id="mealTableBody" class="divide-y divide-[#2A303C]/50 text-slate-300"></tbody></table>
                 </div>
             </div>
         </section>
 
         <!-- ==================== TAB 4: PROGRESS & ANALYTICS ==================== -->
         <section id="content-analytics" class="tab-content hidden space-y-6">
-            
-            <!-- Analytics Charts Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- Chart 1: Whoop Recovery vs Workout Strain -->
                 <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="font-bold text-base flex items-center gap-2">
-                                <i data-lucide="trending-up" class="w-5 h-5 text-[#00E676]"></i>
-                                Whoop Recovery vs Workout Strain Trend
-                            </h3>
-                            <p class="text-xs text-[#8A95A5]">เปรียบเทียบการฟื้นตัวกับการออกแรงซ้อมในรอบ 7 วัน</p>
-                        </div>
-                    </div>
-                    <div class="h-64">
-                        <canvas id="whoopStrainChart"></canvas>
-                    </div>
+                    <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="trending-up" class="w-5 h-5 text-[#00E676]"></i> Whoop Recovery vs Workout Strain</h3>
+                    <div class="h-64"><canvas id="whoopStrainChart"></canvas></div>
                 </div>
-
-                <!-- Chart 2: Total Lifted Volume (Progressive Overload) -->
                 <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="font-bold text-base flex items-center gap-2">
-                                <i data-lucide="bar-chart-2" class="w-5 h-5 text-[#00E5FF]"></i>
-                                Dynamic Volume Load Progression (kgs)
-                            </h3>
-                            <p class="text-xs text-[#8A95A5]">รวมน้ำหนักยกสะสม (Total Weight Lifted) แต่ละครั้งที่ซ้อม</p>
-                        </div>
-                    </div>
-                    <div class="h-64">
-                        <canvas id="volumeChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Body Weight & Body Fat Log -->
-            <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 space-y-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="font-bold text-base flex items-center gap-2">
-                            <i data-lucide="scale" class="w-5 h-5 text-[#FFD600]"></i>
-                            บันทึกน้ำหนักตัวและสัดส่วน (Body Measurement Tracking)
-                        </h3>
-                        <p class="text-xs text-[#8A95A5]">ติดตามการเปลี่ยนแปลงของน้ำหนักตัวและรอบเอว/อก</p>
-                    </div>
-                    <button onclick="toggleBodyWeightModal()" class="px-4 py-2 bg-[#00E676]/10 text-[#00E676] hover:bg-[#00E676]/20 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        บันทึกน้ำหนักวันนี้
-                    </button>
-                </div>
-
-                <!-- Body Weight Table / History -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead>
-                            <tr class="text-[#8A95A5] border-b border-[#2A303C]">
-                                <th class="pb-2">วันที่</th>
-                                <th class="pb-2">น้ำหนักตัว (kg)</th>
-                                <th class="pb-2">รอบเอว (นิ้ว)</th>
-                                <th class="pb-2">รอบอก (นิ้ว)</th>
-                                <th class="pb-2">หมายเหตุ / ฟีลลิ่ง</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bodyLogTableBody" class="divide-y divide-[#2A303C]/50 text-slate-300">
-                            <!-- Rendered dynamically -->
-                        </tbody>
-                    </table>
+                    <h3 class="font-bold text-base flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-5 h-5 text-[#00E5FF]"></i> Volume Load Progression (kgs)</h3>
+                    <div class="h-64"><canvas id="volumeChart"></canvas></div>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== TAB 5: COUPE RULES & FORM CUES ==================== -->
+        <!-- ==================== TAB 5: COUPE RULES ==================== -->
         <section id="content-guides" class="tab-content hidden space-y-6">
-            
-            <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-6 space-y-6">
-                <div class="flex items-center gap-3 border-b border-[#2A303C] pb-4">
-                    <div class="w-12 h-12 rounded-2xl bg-[#00E676]/10 text-[#00E676] flex items-center justify-center font-bold text-2xl">
-                        💡
-                    </div>
-                    <div>
-                        <h2 class="font-bold text-lg text-white">หลักการซ้อมระดับทองคำของคูเป้ (Coupe's Hypertrophy Directives)</h2>
-                        <p class="text-xs text-[#8A95A5]">กฎเหล็กสำหรับการสร้างกล้ามเนื้อและลีนไขมันในยิมเล็กหมู่บ้าน</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Card 1 -->
-                    <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-5 space-y-2 border-l-4 border-l-[#00E676]">
-                        <h3 class="font-bold text-sm text-[#00E676] flex items-center gap-2">
-                            <span>1. Progressive Overload คือหัวใจสูงสุด</span>
-                        </h3>
-                        <p class="text-xs text-slate-300 leading-relaxed">
-                            กล้ามเนื้อจะโตเมื่อต้องรับภาระงานมากกว่าที่เคยทำเสมอ ในยิมหมู่บ้านหากดัมเบลหนักสุดมีจำกัด ให้ก้าวหน้าด้วยการ: <strong>1) เพิ่มน้ำหนัก 2) เพิ่ม Reps (เช่น จาก 8 เป็น 12) 3) ชะลอจังหวะโฟกัส (Tempo 3 วินาทีขาลง)</strong>
-                        </p>
-                    </div>
-
-                    <!-- Card 2 -->
-                    <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-5 space-y-2 border-l-4 border-l-[#00E5FF]">
-                        <h3 class="font-bold text-sm text-[#00E5FF] flex items-center gap-2">
-                            <span>2. RPE 8-9 & Reps in Reserve (RIR)</span>
-                        </h3>
-                        <p class="text-xs text-slate-300 leading-relaxed">
-                            ทุกเซ็ตจริงควรเล่นให้อยู่ในสภาวะเหลืออีกแค่ 1-2 ครั้งจะยกไม่ไหว (RIR 1-2) หากเล่นครบ 12 ครั้งแล้วยังรู้สึกชิว แปลว่าน้ำหนักเบาไป ให้เพิ่มความหนักในเซ็ตถัดไป
-                        </p>
-                    </div>
-
-                    <!-- Card 3 -->
-                    <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-5 space-y-2 border-l-4 border-l-[#FFD600]">
-                        <h3 class="font-bold text-sm text-[#FFD600] flex items-center gap-2">
-                            <span>3. ปรับเปลี่ยนตาม Whoop Recovery</span>
-                        </h3>
-                        <p class="text-xs text-slate-300 leading-relaxed">
-                            • <strong>Green Zone (>67%):</strong> วันระเบิดกล้ามเนื้อ อัดน้ำหนักเต็มที่<br>
-                            • <strong>Yellow Zone (34-66%):</strong> ซ้อมตามมาตรฐาน เน้นการคุมฟอร์ม<br>
-                            • <strong>Red Zone (<33%):</strong> ลดเซ็ตลง 30-50% หรือเน้น Mobility/ยืดเหยียด ไม่ฝืนเล่นจนเสี่ยงบาดเจ็บ
-                        </p>
-                    </div>
-
-                    <!-- Card 4 -->
-                    <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-5 space-y-2 border-l-4 border-l-[#FF3D00]">
-                        <h3 class="font-bold text-sm text-[#FF3D00] flex items-center gap-2">
-                            <span>4. โปรตีน 2.0g ต่อ น้ำหนักตัว 1kg</span>
-                        </h3>
-                        <p class="text-xs text-slate-300 leading-relaxed">
-                            ในการสร้างกล้ามเนื้อพร้อมลดไขมัน (Recomp) โปรตีนคือวัตถุดิบสำคัญที่สุด แบ่งทานโปรตีน 30-40g ต่อมื้อ (เช่น อกไก่ 150-200g หรือเวย์โปรตีน) ทุกๆ 3-4 ชั่วโมง
-                        </p>
-                    </div>
-                </div>
+            <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-6 space-y-4">
+                <h2 class="font-bold text-lg text-white">หลักการซ้อมระดับทองคำของคูเป้ (Coupe Directives)</h2>
+                <p class="text-xs text-[#8A95A5]">1) Progressive Overload 2) RPE 8-9 3) ปรับตาม Whoop Recovery 4) โปรตีน 2.0g/kg</p>
             </div>
         </section>
 
@@ -742,21 +433,10 @@
 
     <!-- Rest Timer Overlay Modal -->
     <div id="restTimerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-[#181C24] border border-[#2A303C] rounded-3xl p-6 max-w-sm w-full text-center space-y-5 shadow-2xl">
-            <div class="flex justify-between items-center text-xs text-[#8A95A5]">
-                <span>REST TIMER</span>
-                <button onclick="toggleRestTimer()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            
-            <div class="py-4">
-                <span id="timerCountdown" class="text-6xl font-extrabold font-mono text-[#00E676]">01:30</span>
-                <p class="text-xs text-[#8A95A5] mt-2">พักหายใจและเตรียมความพร้อมสำหรับเซ็ตถัดไป</p>
-            </div>
-
+        <div class="bg-[#181C24] border border-[#2A303C] rounded-3xl p-6 max-w-sm w-full text-center space-y-5">
+            <span id="timerCountdown" class="text-6xl font-extrabold font-mono text-[#00E676]">01:30</span>
             <div class="flex gap-2 justify-center">
-                <button onclick="addTimerTime(-15)" class="px-3 py-1.5 bg-[#2A303C] text-xs font-bold rounded-lg text-slate-300">-15s</button>
-                <button onclick="toggleTimerPause()" id="pauseTimerBtn" class="px-5 py-1.5 bg-[#00E676] text-black text-xs font-bold rounded-lg">Pause</button>
-                <button onclick="addTimerTime(30)" class="px-3 py-1.5 bg-[#2A303C] text-xs font-bold rounded-lg text-slate-300">+30s</button>
+                <button onclick="toggleRestTimer()" class="px-5 py-2 bg-[#2A303C] text-slate-300 text-xs font-bold rounded-lg">ปิด</button>
             </div>
         </div>
     </div>
@@ -764,268 +444,114 @@
     <!-- Theme Switcher Modal -->
     <div id="themeModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-6 max-w-md w-full space-y-4">
-            <div class="flex justify-between items-center border-b border-[#2A303C] pb-3">
-                <h3 class="font-bold text-base text-white">เลือกธีมหน้าตาแอป (UI Styles)</h3>
-                <button onclick="toggleThemeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <div class="grid grid-cols-1 gap-3">
-                <button onclick="applyTheme('whoop')" class="p-4 bg-[#0F1115] border-2 border-[#00E676] rounded-xl text-left flex items-center justify-between">
-                    <div>
-                        <span class="font-bold text-sm text-[#00E676] block">Cyber Slate Emerald (Whoop Style)</span>
-                        <span class="text-xs text-[#8A95A5]">โทนดำเข้มมืด ตัดด้วยเขียวอีเมอรัลด์ ไฮเทค คมกริบ</span>
-                    </div>
-                    <span class="text-xs bg-[#00E676]/20 text-[#00E676] font-bold px-2 py-1 rounded">ใช้งานอยู่</span>
-                </button>
-
-                <button onclick="applyTheme('neon')" class="p-4 bg-[#0F1115] border border-[#2A303C] hover:border-[#FF5722] rounded-xl text-left flex items-center justify-between">
-                    <div>
-                        <span class="font-bold text-sm text-[#FF5722] block">Beast Mode Neon (Strong / Gymshark Style)</span>
-                        <span class="text-xs text-[#8A95A5]">โทนดำตัดส้มไฟ นีออน ดุดัน ให้พลังการซ้อม</span>
-                    </div>
-                </button>
-
-                <button onclick="applyTheme('minimal')" class="p-4 bg-[#0F1115] border border-[#2A303C] hover:border-[#E2E8F0] rounded-xl text-left flex items-center justify-between">
-                    <div>
-                        <span class="font-bold text-sm text-slate-200 block">Minimal Titanium (Apple Health / Oura Style)</span>
-                        <span class="text-xs text-[#8A95A5]">เรียบหรู คลีน โทนสีเงินไทเทเนียม คลีนตา</span>
-                    </div>
-                </button>
-
-                <button onclick="applyTheme('navy')" class="p-4 bg-[#0F1115] border border-[#2A303C] hover:border-[#38BDF8] rounded-xl text-left flex items-center justify-between">
-                    <div>
-                        <span class="font-bold text-sm text-[#38BDF8] block">Executive Navy (Garmin / MyFitnessPal Style)</span>
-                        <span class="text-xs text-[#8A95A5]">โทนน้ำเงินเข้ม เทคโนโลยีข้อมูลแน่น สไตล์วิเคราะห์</span>
-                    </div>
-                </button>
-            </div>
+            <h3 class="font-bold text-base text-white">เลือกธีมหน้าตาแอป (UI Styles)</h3>
+            <button onclick="toggleThemeModal()" class="w-full p-3 bg-[#0F1115] border border-[#00E676] rounded-xl text-left text-sm font-bold text-[#00E676]">Cyber Slate Emerald (Whoop Style)</button>
         </div>
     </div>
 
-    <!-- Body Weight Entry Modal -->
-    <div id="bodyWeightModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-6 max-w-sm w-full space-y-4">
-            <div class="flex justify-between items-center border-b border-[#2A303C] pb-3">
-                <h3 class="font-bold text-base text-white">บันทึกน้ำหนักตัวและสัดส่วน</h3>
-                <button onclick="toggleBodyWeightModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <form onsubmit="saveBodyLog(event)" class="space-y-3">
-                <div>
-                    <label class="text-xs text-[#8A95A5] block mb-1">น้ำหนักตัว (kg)</label>
-                    <input type="number" id="inputBodyWt" step="0.1" value="75.0" required class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 font-bold focus:outline-none focus:border-[#00E676]">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs text-[#8A95A5] block mb-1">รอบเอว (นิ้ว)</label>
-                        <input type="number" id="inputWaist" step="0.5" placeholder="32" class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-[#00E676]">
-                    </div>
-                    <div>
-                        <label class="text-xs text-[#8A95A5] block mb-1">รอบอก (นิ้ว)</label>
-                        <input type="number" id="inputChest" step="0.5" placeholder="40" class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-[#00E676]">
-                    </div>
-                </div>
-                <div>
-                    <label class="text-xs text-[#8A95A5] block mb-1">ความรู้สึก / ความคืบหน้า</label>
-                    <input type="text" id="inputBodyNote" placeholder="เช่น รู้สึกกล้ามแน่นขึ้น ปั๊มดีมาก" class="w-full bg-[#0F1115] border border-[#2A303C] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-[#00E676]">
-                </div>
-
-                <button type="submit" class="w-full py-2.5 bg-[#00E676] hover:bg-[#00B359] text-black font-bold rounded-xl text-sm transition mt-2">
-                    บันทึกข้อมูล
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- JavaScript Application Engine -->
     <script>
-        // Default Workouts Dataset tailored for Village Gym
         const defaultWorkoutData = {
-            dayA: {
-                title: "DAY A: Chest, Shoulders & Triceps (Push)",
-                exercises: [
-                    { name: "Incline Dumbbell Press", targetSets: 3, targetReps: "8-12", sets: [{wt: 20, reps: 10, rpe: 8}, {wt: 22, reps: 9, rpe: 8.5}, {wt: 22, reps: 8, rpe: 9}] },
-                    { name: "Flat Dumbbell Press / Floor Press", targetSets: 3, targetReps: "8-12", sets: [{wt: 22, reps: 10, rpe: 8}, {wt: 24, reps: 8, rpe: 9}, {wt: 24, reps: 8, rpe: 9}] },
-                    { name: "Seated DB Overhead Shoulder Press", targetSets: 3, targetReps: "10-12", sets: [{wt: 14, reps: 12, rpe: 8}, {wt: 16, reps: 10, rpe: 8.5}, {wt: 16, reps: 9, rpe: 9}] },
-                    { name: "Cable / DB Dumbbell Lateral Raises", targetSets: 4, targetReps: "12-15", sets: [{wt: 8, reps: 15, rpe: 8}, {wt: 8, reps: 15, rpe: 8}, {wt: 10, reps: 12, rpe: 9}, {wt: 10, reps: 11, rpe: 9.5}] },
-                    { name: "Cable Overhead Tricep Extension", targetSets: 3, targetReps: "12-15", sets: [{wt: 15, reps: 14, rpe: 8}, {wt: 17.5, reps: 12, rpe: 8.5}, {wt: 17.5, reps: 10, rpe: 9}] }
-                ]
-            },
-            dayB: {
-                title: "DAY B: Back, Rear Delt & Biceps (Pull)",
-                exercises: [
-                    { name: "Lat Pulldown (Cable) / Chin-ups", targetSets: 4, targetReps: "8-12", sets: [{wt: 45, reps: 12, rpe: 8}, {wt: 50, reps: 10, rpe: 8.5}, {wt: 55, reps: 8, rpe: 9}, {wt: 55, reps: 8, rpe: 9}] },
-                    { name: "Single-Arm Dumbbell Row", targetSets: 3, targetReps: "8-12", sets: [{wt: 22, reps: 10, rpe: 8}, {wt: 24, reps: 10, rpe: 8.5}, {wt: 26, reps: 8, rpe: 9}] },
-                    { name: "Cable Face Pulls / DB Rear Delt Fly", targetSets: 3, targetReps: "12-15", sets: [{wt: 15, reps: 15, rpe: 8}, {wt: 17.5, reps: 13, rpe: 8.5}, {wt: 17.5, reps: 12, rpe: 9}] },
-                    { name: "Dumbbell Bicep Curls (Alternate)", targetSets: 3, targetReps: "10-12", sets: [{wt: 10, reps: 12, rpe: 8}, {wt: 12, reps: 10, rpe: 8.5}, {wt: 12, reps: 9, rpe: 9}] }
-                ]
-            },
-            dayC: {
-                title: "DAY C: Legs, Hamstrings & Abs (Legs)",
-                exercises: [
-                    { name: "Dumbbell Goblet Squat", targetSets: 4, targetReps: "8-12", sets: [{wt: 24, reps: 12, rpe: 8}, {wt: 28, reps: 10, rpe: 8.5}, {wt: 30, reps: 9, rpe: 9}, {wt: 30, reps: 8, rpe: 9}] },
-                    { name: "DB Bulgarian Split Squats", targetSets: 3, targetReps: "10-12", sets: [{wt: 12, reps: 12, rpe: 8}, {wt: 14, reps: 10, rpe: 8.5}, {wt: 14, reps: 10, rpe: 9}] },
-                    { name: "DB Romanian Deadlift (RDL)", targetSets: 3, targetReps: "10-12", sets: [{wt: 20, reps: 12, rpe: 8}, {wt: 24, reps: 10, rpe: 8.5}, {wt: 24, reps: 10, rpe: 9}] },
-                    { name: "Hanging Leg Raise / Cable Crunch", targetSets: 3, targetReps: "15-20", sets: [{wt: 0, reps: 18, rpe: 8}, {wt: 0, reps: 16, rpe: 8.5}, {wt: 0, reps: 15, rpe: 9}] }
-                ]
-            },
-            dayD: {
-                title: "DAY D: Upper Body Sculpt & Arms (Sculpt)",
-                exercises: [
-                    { name: "Incline DB Fly / Cable Chest Crossover", targetSets: 3, targetReps: "12-15", sets: [{wt: 10, reps: 15, rpe: 8}, {wt: 12, reps: 13, rpe: 8.5}, {wt: 12, reps: 12, rpe: 9}] },
-                    { name: "Dumbbell Hammer Curls", targetSets: 3, targetReps: "10-12", sets: [{wt: 12, reps: 12, rpe: 8}, {wt: 14, reps: 10, rpe: 8.5}, {wt: 14, reps: 9, rpe: 9}] },
-                    { name: "Cable Tricep Pushdown", targetSets: 3, targetReps: "12-15", sets: [{wt: 20, reps: 15, rpe: 8}, {wt: 22.5, reps: 13, rpe: 8.5}, {wt: 25, reps: 10, rpe: 9}] },
-                    { name: "Leaning Cable / DB Lateral Raise", targetSets: 4, targetReps: "15-20", sets: [{wt: 6, reps: 20, rpe: 8}, {wt: 8, reps: 16, rpe: 8.5}, {wt: 8, reps: 15, rpe: 9}, {wt: 8, reps: 15, rpe: 9.5}] }
-                ]
-            }
+            dayA: { title: "DAY A: Chest, Shoulders & Triceps", exercises: [{ name: "Incline Dumbbell Press", targetSets: 3, targetReps: "8-12", sets: [{wt: 20, reps: 10, rpe: 8}, {wt: 22, reps: 9, rpe: 8.5}] }] },
+            dayB: { title: "DAY B: Back & Biceps", exercises: [{ name: "Lat Pulldown (Cable)", targetSets: 4, targetReps: "8-12", sets: [{wt: 45, reps: 12, rpe: 8}] }] },
+            dayC: { title: "DAY C: Legs & Abs", exercises: [{ name: "Dumbbell Goblet Squat", targetSets: 4, targetReps: "8-12", sets: [{wt: 24, reps: 12, rpe: 8}] }] },
+            dayD: { title: "DAY D: Upper Body Sculpt & Arms", exercises: [{ name: "Incline DB Fly", targetSets: 3, targetReps: "12-15", sets: [{wt: 10, reps: 15, rpe: 8}] }] }
         };
 
-        // Application State
         let appState = {
-            whoop: {
-                recovery: 85,
-                strain: 14.5,
-                sleep: 90,
-                hrv: 68,
-                rhr: 52
-            },
-            meals: [
-                { id: 1, name: "อกไก่นึ่ง 200g + ข้าวกล้อง + สลัด Chub Chub", prot: 48, kcal: 520, time: "12:30" },
-                { id: 2, name: "เวย์โปรตีน 1 สกู๊ป + กล้วยหอม", prot: 27, kcal: 210, time: "16:00" },
-                { id: 3, name: "แซลมอนย่าง + สลัดผักโอโซน", prot: 35, kcal: 450, time: "19:30" }
-            ],
+            whoop: { recovery: 85, strain: 14.5, sleep: 90, hrv: 68, rhr: 52 },
+            meals: [],
             water: 2.5,
-            bodyLogs: [
-                { date: "2026-11-20", weight: 75.4, waist: 32.5, chest: 40.0, note: "ฟื้นตัวดี เล่นอกปั๊มมาก" },
-                { date: "2026-11-21", weight: 75.1, waist: 32.0, chest: 40.2, note: "Whoop Green 82% ยก Goblet Squats ได้ไหลลื่น" },
-                { date: "2026-11-22", weight: 75.0, waist: 32.0, chest: 40.5, note: "กล้ามเนื้อแน่นขึ้นชัดเจน" }
-            ],
-            volumeHistory: [
-                { date: "16 Nov", volume: 3820 },
-                { date: "17 Nov", volume: 4150 },
-                { date: "19 Nov", volume: 3950 },
-                { date: "20 Nov", volume: 4380 },
-                { date: "22 Nov", volume: 4620 }
-            ],
+            bodyLogs: [],
+            volumeHistory: [{ date: "20 Nov", volume: 4380 }, { date: "22 Nov", volume: 4620 }],
             workouts: defaultWorkoutData
         };
 
-        // Initialize App on DOM Loaded
         document.addEventListener('DOMContentLoaded', () => {
             loadFromLocalStorage();
+            checkWhoopOAuthHash();
             lucide.createIcons();
             updateDateString();
             renderWhoopUI();
             renderWorkoutLogger();
-            renderMealsUI();
-            renderBodyLogUI();
             initCharts();
-            calculateMacros();
         });
 
-        // Tab Switching Logic
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active', 'border-[#00E676]', 'text-[#00E676]');
-                btn.classList.add('border-transparent', 'text-slate-400');
-            });
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-
-            const targetBtn = document.getElementById(`tab-${tabName}`);
-            const targetContent = document.getElementById(`content-${tabName}`);
-
-            if (targetBtn && targetContent) {
-                targetBtn.classList.add('active', 'border-[#00E676]', 'text-[#00E676]');
-                targetBtn.classList.remove('border-transparent', 'text-slate-400');
-                targetContent.classList.remove('hidden');
+        // Auto Sync Whoop Data when redirected back from Whoop Authorization
+        function checkWhoopOAuthHash() {
+            const hash = window.location.hash;
+            if (hash && hash.includes('access_token')) {
+                const params = new URLSearchParams(hash.replace('#', '?'));
+                const token = params.get('access_token');
+                if (token) {
+                    localStorage.setItem('whoop_access_token', token);
+                    window.location.hash = '';
+                    fetchWhoopLiveDataDirect(token);
+                }
+            } else {
+                const savedToken = localStorage.getItem('whoop_access_token');
+                if (savedToken) fetchWhoopLiveDataDirect(savedToken);
             }
         }
 
-        // Whoop Functions
-        function updateSliderVal(val) {
-            document.getElementById('recoverySliderVal').textContent = `${val}%`;
+        async function fetchWhoopLiveDataDirect(token) {
+            try {
+                const res = await fetch('https://api.prod.whoop.com/developer/v1/recovery', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data && data.records && data.records.length > 0) {
+                    const latest = data.records[0].score;
+                    appState.whoop.recovery = latest.recovery_score || appState.whoop.recovery;
+                    appState.whoop.hrv = Math.round(latest.hrv_rmssd_milli || appState.whoop.hrv);
+                    appState.whoop.rhr = Math.round(latest.resting_heart_rate || appState.whoop.rhr);
+                    renderWhoopUI();
+                    saveToLocalStorage();
+                    initCharts();
+                }
+            } catch (err) {
+                console.log("Whoop Client Fetch Fallback:", err);
+            }
         }
 
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'border-[#00E676]', 'text-[#00E676]'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.add('active', 'border-[#00E676]', 'text-[#00E676]');
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+        }
+
+        function updateSliderVal(v) { document.getElementById('recoverySliderVal').textContent = `${v}%`; }
         function saveWhoopData(e) {
             e.preventDefault();
-            const rec = parseInt(document.getElementById('inputRecovery').value);
-            const strain = parseFloat(document.getElementById('inputStrain').value);
-            const sleep = parseInt(document.getElementById('inputSleep').value);
-            const hrv = parseInt(document.getElementById('inputHRV').value);
-            const rhr = parseInt(document.getElementById('inputRHR').value);
-
-            appState.whoop = { recovery: rec, strain: strain, sleep: sleep, hrv: hrv, rhr: rhr };
+            appState.whoop.recovery = parseInt(document.getElementById('inputRecovery').value);
             saveToLocalStorage();
             renderWhoopUI();
-            alert('อัปเดตสถานะ Whoop เรียบร้อยแล้ว!');
+            alert('อัปเดตเรียบร้อยแล้ว!');
         }
 
         function renderWhoopUI() {
             const w = appState.whoop;
-            document.getElementById('topRecoveryVal').textContent = `${w.recovery}%`;
             document.getElementById('gaugeValue').textContent = `${w.recovery}%`;
             document.getElementById('displayStrain').textContent = w.strain;
             document.getElementById('displaySleep').textContent = `${w.sleep}%`;
             document.getElementById('displayHRV').textContent = `${w.hrv} ms`;
 
-            // Update Circle Offset (Circumference = 2 * PI * 72 = 452.39)
             const circumference = 452.39;
             const offset = circumference - (w.recovery / 100) * circumference;
-            const gaugeEl = document.getElementById('recoveryGauge');
-            gaugeEl.style.strokeDashoffset = offset;
+            document.getElementById('recoveryGauge').style.strokeDashoffset = offset;
 
-            // Zone Colors & Coupe Directive
             const tag = document.getElementById('whoopZoneTag');
-            const topDot = document.getElementById('topRecoveryDot');
-            const directiveBox = document.getElementById('coupeDirectiveBox');
             const directiveText = document.getElementById('coupeDirectiveText');
-            const intensityBar = document.getElementById('intensityBar');
-            const targetIntensityText = document.getElementById('targetIntensityText');
-
             if (w.recovery >= 67) {
-                // GREEN
-                gaugeEl.setAttribute('stroke', '#00E676');
                 tag.textContent = 'GREEN ZONE';
-                tag.className = 'px-2.5 py-1 text-xs font-bold rounded-full bg-[#00E676]/20 text-[#00E676] border border-[#00E676]/40';
-                topDot.className = 'w-2.5 h-2.5 rounded-full bg-[#00E676] animate-pulse';
-                directiveBox.className = 'bg-[#0F1115] border border-[#00E676]/30 rounded-xl p-4 space-y-2 mb-4';
-                directiveText.innerHTML = `<strong>GREEN ZONE (${w.recovery}%):</strong> ระบบประสาทเตรียมพร้อมสุดๆ! วันนี้ให้เน้น Progressive Overload ดันน้ำหนักเพิ่ม +2.5kg หรือเพิ่มจำนวนครั้งในท่าหลัก เล่นเข้าใกล้ Failure (RPE 8.5-9) ได้เลยครับ!`;
-                intensityBar.style.width = '85%';
-                intensityBar.className = 'bg-[#00E676] h-full transition-all duration-500';
-                targetIntensityText.textContent = 'High / Progressive Push (RPE 8.5-9)';
-                targetIntensityText.className = 'font-bold text-[#00E676]';
+                directiveText.innerHTML = `<strong>GREEN ZONE (${w.recovery}%):</strong> พร้อมลุย Progressive Overload! ดันน้ำหนักเพิ่ม +2.5kg หรือบวก Reps อัด RPE 8.5-9 ได้เลยครับ!`;
             } else if (w.recovery >= 34) {
-                // YELLOW
-                gaugeEl.setAttribute('stroke', '#FFD600');
                 tag.textContent = 'YELLOW ZONE';
-                tag.className = 'px-2.5 py-1 text-xs font-bold rounded-full bg-[#FFD600]/20 text-[#FFD600] border border-[#FFD600]/40';
-                topDot.className = 'w-2.5 h-2.5 rounded-full bg-[#FFD600]';
-                directiveBox.className = 'bg-[#0F1115] border border-[#FFD600]/30 rounded-xl p-4 space-y-2 mb-4';
-                directiveText.innerHTML = `<strong>YELLOW ZONE (${w.recovery}%):</strong> การฟื้นตัวอยู่ในระดับปานกลาง เล่นตามตารางปกติด้วยน้ำหนักคงที่ เน้นฟอร์มการเล่นที่คมและโดนตรงจุด (RPE 7.5-8) ไม่ต้องฝืนทำ New PR วันนี้ครับ`;
-                intensityBar.style.width = '65%';
-                intensityBar.className = 'bg-[#FFD600] h-full transition-all duration-500';
-                targetIntensityText.textContent = 'Moderate / Form Focus (RPE 7.5-8)';
-                targetIntensityText.className = 'font-bold text-[#FFD600]';
+                directiveText.innerHTML = `<strong>YELLOW ZONE (${w.recovery}%):</strong> ฟื้นตัวระดับปานกลาง เล่นตามตารางคุมฟอร์มที่คมและโดนจุดครับ`;
             } else {
-                // RED
-                gaugeEl.setAttribute('stroke', '#FF3D00');
                 tag.textContent = 'RED ZONE';
-                tag.className = 'px-2.5 py-1 text-xs font-bold rounded-full bg-[#FF3D00]/20 text-[#FF3D00] border border-[#FF3D00]/40';
-                topDot.className = 'w-2.5 h-2.5 rounded-full bg-[#FF3D00]';
-                directiveBox.className = 'bg-[#0F1115] border border-[#FF3D00]/30 rounded-xl p-4 space-y-2 mb-4';
-                directiveText.innerHTML = `<strong>RED ZONE (${w.recovery}%):</strong> ร่างกายต้องการการพักผ่อน! แนะนำให้ทำ Active Recovery (ยืดเหยียด/เดินเบาๆ) หรือลดจำนวนเซ็ตลง 40% เลี่ยงการยกหนักเสี่ยงบาดเจ็บครับ`;
-                intensityBar.style.width = '35%';
-                intensityBar.className = 'bg-[#FF3D00] h-full transition-all duration-500';
-                targetIntensityText.textContent = 'Active Recovery / Light Deload (RPE 5-6)';
-                targetIntensityText.className = 'font-bold text-[#FF3D00]';
+                directiveText.innerHTML = `<strong>RED ZONE (${w.recovery}%):</strong> ร่างกายต้องการพักผ่อน ทำ Active Recovery หรือลดเซ็ตลง 40% ครับ`;
             }
-        }
-
-        // Workout Logger Engine
-        function selectDayWorkout(dayKey) {
-            document.getElementById('workoutDaySelect').value = dayKey;
-            switchTab('workout');
-            renderWorkoutLogger();
         }
 
         function renderWorkoutLogger() {
@@ -1037,72 +563,24 @@
             routine.exercises.forEach((ex, exIdx) => {
                 const exCard = document.createElement('div');
                 exCard.className = 'bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 space-y-4';
-
-                let setsRowsHtml = '';
-                ex.sets.forEach((s, setIdx) => {
-                    setsRowsHtml += `
-                        <tr class="border-b border-[#2A303C]/40 text-xs">
-                            <td class="py-2.5 font-bold text-[#00E676] text-center">SET ${setIdx + 1}</td>
-                            <td class="py-2.5">
-                                <input type="number" step="0.5" value="${s.wt}" onchange="updateSetVal('${dayKey}', ${exIdx}, ${setIdx}, 'wt', this.value)"
-                                    class="w-20 bg-[#0F1115] border border-[#2A303C] rounded-lg px-2 py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-[#00E676]"> kg
-                            </td>
-                            <td class="py-2.5">
-                                <input type="number" value="${s.reps}" onchange="updateSetVal('${dayKey}', ${exIdx}, ${setIdx}, 'reps', this.value)"
-                                    class="w-20 bg-[#0F1115] border border-[#2A303C] rounded-lg px-2 py-1 text-center font-bold text-slate-100 focus:outline-none focus:border-[#00E676]"> reps
-                            </td>
-                            <td class="py-2.5">
-                                <select onchange="updateSetVal('${dayKey}', ${exIdx}, ${setIdx}, 'rpe', this.value)" class="bg-[#0F1115] border border-[#2A303C] rounded-lg px-2 py-1 text-xs font-semibold text-slate-200">
-                                    <option value="7" ${s.rpe == 7 ? 'selected' : ''}>RPE 7 (ชิล)</option>
-                                    <option value="8" ${s.rpe == 8 ? 'selected' : ''}>RPE 8 (เหลือ 2)</option>
-                                    <option value="8.5" ${s.rpe == 8.5 ? 'selected' : ''}>RPE 8.5</option>
-                                    <option value="9" ${s.rpe == 9 ? 'selected' : ''}>RPE 9 (เหลือ 1)</option>
-                                    <option value="10" ${s.rpe == 10 ? 'selected' : ''}>RPE 10 (Failure)</option>
-                                </select>
-                            </td>
-                            <td class="py-2.5 text-right font-mono font-bold text-[#00E5FF]">
-                                ${s.wt * s.reps} kg
-                            </td>
-                        </tr>
-                    `;
-                });
+                let setsRows = ex.sets.map((s, sIdx) => `
+                    <tr class="border-b border-[#2A303C]/40 text-xs">
+                        <td class="py-2.5 font-bold text-[#00E676] text-center">SET ${sIdx + 1}</td>
+                        <td class="py-2.5"><input type="number" step="0.5" value="${s.wt}" onchange="updateSetVal('${dayKey}', ${exIdx}, ${sIdx}, 'wt', this.value)" class="w-20 bg-[#0F1115] border border-[#2A303C] rounded-lg px-2 py-1 text-center font-bold text-slate-100"> kg</td>
+                        <td class="py-2.5"><input type="number" value="${s.reps}" onchange="updateSetVal('${dayKey}', ${exIdx}, ${sIdx}, 'reps', this.value)" class="w-20 bg-[#0F1115] border border-[#2A303C] rounded-lg px-2 py-1 text-center font-bold text-slate-100"> reps</td>
+                        <td class="py-2.5 text-right font-mono font-bold text-[#00E5FF]">${s.wt * s.reps} kg</td>
+                    </tr>
+                `).join('');
 
                 exCard.innerHTML = `
                     <div class="flex items-center justify-between border-b border-[#2A303C] pb-3">
-                        <div class="flex items-center gap-3">
-                            <span class="w-8 h-8 rounded-xl bg-[#00E676]/10 text-[#00E676] font-extrabold flex items-center justify-center text-sm">${exIdx + 1}</span>
-                            <div>
-                                <h3 class="font-bold text-base text-white">${ex.name}</h3>
-                                <p class="text-xs text-[#8A95A5]">Target: ${ex.targetSets} เซ็ต x ${ex.targetReps} ครั้ง</p>
-                            </div>
-                        </div>
-                        <button onclick="addSetRow('${dayKey}', ${exIdx})" class="px-3 py-1.5 bg-[#2A303C] hover:bg-[#2A303C]/80 text-[#00E676] rounded-xl text-xs font-bold transition flex items-center gap-1">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> เพิ่มเซ็ต
-                        </button>
+                        <h3 class="font-bold text-base text-white">${ex.name}</h3>
+                        <button onclick="addSetRow('${dayKey}', ${exIdx})" class="px-3 py-1.5 bg-[#2A303C] text-[#00E676] rounded-xl text-xs font-bold">+ เพิ่มเซ็ต</button>
                     </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="text-[11px] text-[#8A95A5] uppercase border-b border-[#2A303C]">
-                                    <th class="pb-2 text-center">เซ็ต</th>
-                                    <th class="pb-2">น้ำหนัก (kg)</th>
-                                    <th class="pb-2">จำนวนครั้ง (reps)</th>
-                                    <th class="pb-2">ความหนัก (RPE)</th>
-                                    <th class="pb-2 text-right">Volume</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${setsRowsHtml}
-                            </tbody>
-                        </table>
-                    </div>
+                    <table class="w-full text-left"><tbody>${setsRows}</tbody></table>
                 `;
-
                 container.appendChild(exCard);
             });
-
-            lucide.createIcons();
         }
 
         function updateSetVal(dayKey, exIdx, setIdx, field, val) {
@@ -1113,305 +591,59 @@
 
         function addSetRow(dayKey, exIdx) {
             const ex = appState.workouts[dayKey].exercises[exIdx];
-            const lastSet = ex.sets[ex.sets.length - 1] || { wt: 10, reps: 10, rpe: 8 };
-            ex.sets.push({ wt: lastSet.wt, reps: lastSet.reps, rpe: lastSet.rpe });
+            const lastSet = ex.sets[ex.sets.length - 1] || { wt: 10, reps: 10 };
+            ex.sets.push({ wt: lastSet.wt, reps: lastSet.reps });
             saveToLocalStorage();
             renderWorkoutLogger();
         }
 
         function finishTodayWorkout() {
             const dayKey = document.getElementById('workoutDaySelect').value;
-            const routine = appState.workouts[dayKey];
             let totalVol = 0;
-
-            routine.exercises.forEach(ex => {
-                ex.sets.forEach(s => {
-                    totalVol += (s.wt * s.reps);
-                });
-            });
-
+            appState.workouts[dayKey].exercises.forEach(ex => ex.sets.forEach(s => totalVol += (s.wt * s.reps)));
             const todayStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
             appState.volumeHistory.push({ date: todayStr, volume: totalVol });
             saveToLocalStorage();
             initCharts();
-            alert(`🎉 บันทึกการซ้อมเสร็จสิ้น! คุณทำ Total Volume ไปได้ทั้งหมด ${totalVol.toLocaleString()} kg`);
+            alert(`🎉 บันทึกการซ้อมเสร็จสิ้น! Total Volume: ${totalVol.toLocaleString()} kg`);
         }
 
-        // Rest Timer Modal
-        let timerSeconds = 90;
-        let timerInterval = null;
-        let isTimerPaused = false;
-
-        function toggleRestTimer() {
-            const modal = document.getElementById('restTimerModal');
-            modal.classList.toggle('hidden');
-            if (!modal.classList.contains('hidden')) {
-                resetAndStartTimer();
-            } else {
-                clearInterval(timerInterval);
-            }
-        }
-
-        function resetAndStartTimer() {
-            clearInterval(timerInterval);
-            timerSeconds = 90;
-            isTimerPaused = false;
-            updateTimerDisplay();
-            timerInterval = setInterval(() => {
-                if (!isTimerPaused && timerSeconds > 0) {
-                    timerSeconds--;
-                    updateTimerDisplay();
-                } else if (timerSeconds === 0) {
-                    clearInterval(timerInterval);
-                    alert('⏰ หมดเวลาพักเซ็ต! พร้อมลุยเซ็ตต่อไปแล้วครับ');
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
-            const s = (timerSeconds % 60).toString().padStart(2, '0');
-            document.getElementById('timerCountdown').textContent = `${m}:${s}`;
-        }
-
-        function addTimerTime(sec) {
-            timerSeconds = Math.max(0, timerSeconds + sec);
-            updateTimerDisplay();
-        }
-
-        function toggleTimerPause() {
-            isTimerPaused = !isTimerPaused;
-            document.getElementById('pauseTimerBtn').textContent = isTimerPaused ? 'Resume' : 'Pause';
-        }
-
-        // Nutrition UI Functions
-        function addMealEntry(e) {
-            e.preventDefault();
-            const name = document.getElementById('mealName').value;
-            const prot = parseInt(document.getElementById('mealProt').value);
-            const kcal = parseInt(document.getElementById('mealKcal').value);
-            const timeStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-
-            appState.meals.push({ id: Date.now(), name, prot, kcal, time: timeStr });
-            saveToLocalStorage();
-            renderMealsUI();
-            document.getElementById('mealForm').reset();
-        }
-
-        function deleteMeal(id) {
-            appState.meals = appState.meals.filter(m => m.id !== id);
-            saveToLocalStorage();
-            renderMealsUI();
-        }
-
-        function addWater(liters) {
-            appState.water = parseFloat((appState.water + liters).toFixed(1));
-            saveToLocalStorage();
-            renderMealsUI();
-        }
-
-        function renderMealsUI() {
-            const tbody = document.getElementById('mealTableBody');
-            tbody.innerHTML = '';
-
-            let totalProt = 0;
-            let totalKcal = 0;
-
-            appState.meals.forEach(m => {
-                totalProt += m.prot;
-                totalKcal += m.kcal;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="py-2 text-[#8A95A5]">${m.time}</td>
-                    <td class="py-2 font-medium text-slate-200">${m.name}</td>
-                    <td class="py-2 font-bold text-[#00E676]">${m.prot}g</td>
-                    <td class="py-2 font-bold text-[#00E5FF]">${m.kcal} kcal</td>
-                    <td class="py-2 text-right">
-                        <button onclick="deleteMeal(${m.id})" class="text-slate-500 hover:text-[#FF3D00]"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Update Bars
-            document.getElementById('protTrackerText').textContent = `${totalProt}g / 160g`;
-            document.getElementById('protBar').style.width = `${Math.min(100, (totalProt / 160) * 100)}%`;
-
-            document.getElementById('waterText').textContent = `${appState.water} / 3.5 ลิตร`;
-
-            lucide.createIcons();
-        }
-
-        function calculateMacros() {
-            const wt = parseFloat(document.getElementById('calcWeight').value) || 75;
-            const ht = parseFloat(document.getElementById('calcHeight').value) || 175;
-            const age = parseInt(document.getElementById('calcAge').value) || 30;
-            const act = parseFloat(document.getElementById('calcActivity').value) || 1.375;
-
-            // Mifflin-St Jeor Formula
-            const bmr = Math.round((10 * wt) + (6.25 * ht) - (5 * age) + 5);
-            const tdee = Math.round(bmr * act);
-            const recompKcal = tdee - 150; // Small deficit for recomp
-            const targetProt = Math.round(wt * 2.0);
-
-            document.getElementById('resBMR').textContent = `${bmr.toLocaleString()} kcal`;
-            document.getElementById('resTDEE').textContent = `${tdee.toLocaleString()} kcal`;
-            document.getElementById('resTargetKcal').textContent = `${recompKcal.toLocaleString()} kcal`;
-            document.getElementById('resTargetProt').textContent = `${targetProt} g/day`;
-        }
-
-        // Body Measurement Logging
-        function toggleBodyWeightModal() {
-            document.getElementById('bodyWeightModal').classList.toggle('hidden');
-        }
-
-        function saveBodyLog(e) {
-            e.preventDefault();
-            const wt = parseFloat(document.getElementById('inputBodyWt').value);
-            const waist = parseFloat(document.getElementById('inputWaist').value) || 0;
-            const chest = parseFloat(document.getElementById('inputChest').value) || 0;
-            const note = document.getElementById('inputBodyNote').value || '-';
-            const todayStr = new Date().toISOString().split('T')[0];
-
-            appState.bodyLogs.unshift({ date: todayStr, weight: wt, waist: waist, chest: chest, note: note });
-            saveToLocalStorage();
-            renderBodyLogUI();
-            toggleBodyWeightModal();
-        }
-
-        function renderBodyLogUI() {
-            const tbody = document.getElementById('bodyLogTableBody');
-            tbody.innerHTML = '';
-
-            appState.bodyLogs.forEach(b => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="py-2.5 text-[#8A95A5] font-mono">${b.date}</td>
-                    <td class="py-2.5 font-bold text-[#00E676]">${b.weight} kg</td>
-                    <td class="py-2.5 text-slate-300">${b.waist ? b.waist + '"' : '-'}</td>
-                    <td class="py-2.5 text-slate-300">${b.chest ? b.chest + '"' : '-'}</td>
-                    <td class="py-2.5 text-slate-400 italic">${b.note}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // Charts Initialization
-        let chartWhoopInstance = null;
-        let chartVolumeInstance = null;
+        function toggleRestTimer() { document.getElementById('restTimerModal').classList.toggle('hidden'); }
+        function toggleThemeModal() { document.getElementById('themeModal').classList.toggle('hidden'); }
 
         function initCharts() {
-            // Chart 1: Whoop Recovery vs Strain
             const ctx1 = document.getElementById('whoopStrainChart').getContext('2d');
-            if (chartWhoopInstance) chartWhoopInstance.destroy();
-
-            chartWhoopInstance = new Chart(ctx1, {
+            new Chart(ctx1, {
                 type: 'line',
                 data: {
                     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [
-                        {
-                            label: 'Whoop Recovery (%)',
-                            data: [82, 88, 65, 90, 78, 85, appState.whoop.recovery],
-                            borderColor: '#00E676',
-                            backgroundColor: 'rgba(0, 230, 118, 0.1)',
-                            fill: true,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Strain Score (x10)',
-                            data: [140, 155, 120, 160, 145, 150, appState.whoop.strain * 10],
-                            borderColor: '#00E5FF',
-                            borderDash: [5, 5],
-                            tension: 0.4
-                        }
-                    ]
+                    datasets: [{ label: 'Recovery (%)', data: [82, 88, 65, 90, 78, 85, appState.whoop.recovery], borderColor: '#00E676', backgroundColor: 'rgba(0,230,118,0.1)', fill: true }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#8A95A5' } } },
-                    scales: {
-                        x: { ticks: { color: '#8A95A5' }, grid: { color: '#2A303C' } },
-                        y: { ticks: { color: '#8A95A5' }, grid: { color: '#2A303C' } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // Chart 2: Volume Progression
             const ctx2 = document.getElementById('volumeChart').getContext('2d');
-            if (chartVolumeInstance) chartVolumeInstance.destroy();
-
-            const labels = appState.volumeHistory.map(h => h.date);
-            const volumes = appState.volumeHistory.map(h => h.volume);
-
-            chartVolumeInstance = new Chart(ctx2, {
+            new Chart(ctx2, {
                 type: 'bar',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Total Volume Lifted (kg)',
-                        data: volumes,
-                        backgroundColor: '#00E5FF',
-                        borderRadius: 6
-                    }]
+                    labels: appState.volumeHistory.map(h => h.date),
+                    datasets: [{ label: 'Volume (kg)', data: appState.volumeHistory.map(h => h.volume), backgroundColor: '#00E5FF' }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#8A95A5' } } },
-                    scales: {
-                        x: { ticks: { color: '#8A95A5' }, grid: { color: '#2A303C' } },
-                        y: { ticks: { color: '#8A95A5' }, grid: { color: '#2A303C' } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        // Theme Switcher & Modal
-        function toggleThemeModal() {
-            document.getElementById('themeModal').classList.toggle('hidden');
-        }
-
-        function applyTheme(themeKey) {
-            document.body.className = "min-h-screen flex flex-col bg-[#0F1115] text-slate-100 antialiased selection:bg-[#00E676] selection:text-black";
-            alert(`เปลี่ยนธีมแอปเป็น ${themeKey.toUpperCase()} เรียบร้อยแล้ว!`);
-            toggleThemeModal();
-        }
-
-        // Date helper
         function updateDateString() {
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
-            document.getElementById('currentDateStr').textContent = now.toLocaleDateString('th-TH', options);
+            document.getElementById('currentDateStr').textContent = new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
         }
-
-        // Storage Management
-        function saveToLocalStorage() {
-            localStorage.setItem('coupe_pt_khem_state', JSON.stringify(appState));
-        }
-
+        function saveToLocalStorage() { localStorage.setItem('coupe_pt_khem_state', JSON.stringify(appState)); }
         function loadFromLocalStorage() {
-            const saved = localStorage.getItem('coupe_pt_khem_state');
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    appState = { ...appState, ...parsed };
-                } catch (e) {
-                    console.error('Error loading state', e);
-                }
-            }
+            const s = localStorage.getItem('coupe_pt_khem_state');
+            if (s) appState = { ...appState, ...JSON.parse(s) };
         }
-
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-            const dlAnchor = document.createElement('a');
-            dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", `Coupe_PT_Khem_Data_${new Date().toISOString().split('T')[0]}.json`);
-            document.body.appendChild(dlAnchor);
-            dlAnchor.click();
-            dlAnchor.remove();
+            const a = document.createElement('a'); a.href = dataStr; a.download = `Coupe_PT_Data.json`; a.click();
         }
     </script>
 </body>
