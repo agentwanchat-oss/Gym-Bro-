@@ -69,7 +69,7 @@
             <!-- Header Quick Stats & Actions -->
             <div class="flex items-center gap-3">
                 <!-- 1-Click Whoop OAuth Button -->
-                <a href="https://api.prod.whoop.com/oauth/oauth2/auth?response_type=token&client_id=d655fe77-f83d-4ac4-8cfb-916858b15376&redirect_uri=https%3A%2F%2Fagentwanchat-oss.github.io%2FGym-Bro-%2F&scope=read%3Arecovery%20read%3Acycles%20read%3Asleep%20read%3Aworkout%20read%3Aprofile&state=khem_coupe_pt_2026" 
+                <a href="https://api.prod.whoop.com/oauth/oauth2/auth?response_type=token&client_id=f560a0cd-46cc-4ae5-88e1-588123124b09&redirect_uri=https%3A%2F%2Fagentwanchat-oss.github.io%2FGym-Bro-%2F&scope=read%3Arecovery%20read%3Acycles%20read%3Asleep%20read%3Aworkout%20read%3Aprofile&state=khem_coupe_pt_2026" 
                    class="px-3 py-1.5 bg-[#00E676]/10 hover:bg-[#00E676]/20 border border-[#00E676]/40 text-[#00E676] rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-[#00E676]/10">
                     <i data-lucide="zap" class="w-3.5 h-3.5"></i>
                     <span>เชื่อมต่อ Whoop Realtime</span>
@@ -126,7 +126,7 @@
         <section id="content-dashboard" class="tab-content space-y-6">
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Whoop Manual Entry & Status Card -->
+                <!-- Whoop Score Entry Card -->
                 <div class="bg-[#181C24] border border-[#2A303C] rounded-2xl p-5 relative overflow-hidden">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
@@ -314,7 +314,7 @@
                         <h3 class="font-bold text-sm mb-1 text-slate-100">Chest, Shoulders & Triceps</h3>
                         <p class="text-xs text-[#8A95A5] mb-3">อก อกบน ไหล่หนา หลังแขน</p>
                     </div>
-                    <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-4 hover:border-[#00E676]/50 transition cursor-pointer" onclick="selectDayWorkout('dayB')">
+                    <div class="bg-[#0F1115] border border-[#2A303C] rounded-xl p-4 hover:border-[#00E5FF]/10 transition cursor-pointer" onclick="selectDayWorkout('dayB')">
                         <div class="flex items-center justify-between mb-2">
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-[#00E5FF]/10 text-[#00E5FF] rounded">DAY B</span>
                             <span class="text-xs text-[#8A95A5]">Pull Focus</span>
@@ -476,7 +476,7 @@
             initCharts();
         });
 
-        // Auto Sync Whoop Data when redirected back from Whoop Authorization
+        // Auto Sync Whoop Data when redirected back from Whoop Authorization with Client ID
         function checkWhoopOAuthHash() {
             const hash = window.location.hash;
             if (hash && hash.includes('access_token')) {
