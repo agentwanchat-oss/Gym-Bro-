@@ -59,7 +59,7 @@
                         <h1 class="font-bold text-lg leading-tight tracking-wide">COUPE <span class="text-[#00E676]">PT</span> x KHEM</h1>
                         <span id="whoopSyncStatusBadge" class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/30 rounded-full flex items-center gap-1">
                             <span id="whoopPingDot" class="w-1.5 h-1.5 rounded-full bg-[#00E676] animate-pulse"></span>
-                            WHOOP OPTIMIZED
+                            <span id="whoopBadgeLabel">WHOOP OPTIMIZED</span>
                         </span>
                     </div>
                     <p class="text-xs text-[#8A95A5]">Village Gym Hypertrophy & Recomp Engine</p>
@@ -69,7 +69,7 @@
             <!-- Header Quick Stats & Actions -->
             <div class="flex items-center gap-3">
                 <!-- 1-Click Whoop OAuth Button -->
-                <a href="https://api.prod.whoop.com/oauth/oauth2/auth?response_type=token&client_id=f560a0cd-46cc-4ae5-88e1-588123124b09&redirect_uri=https%3A%2F%2Fagentwanchat-oss.github.io%2FGym-Bro-%2F&scope=read%3Arecovery%20read%3Acycles%20read%3Asleep%20read%3Aworkout%20read%3Aprofile&state=khem_coupe_pt_2026" 
+                <a href="https://api.prod.whoop.com/oauth/oauth2/auth?response_type=code&client_id=f560a0cd-46cc-4ae5-88e1-588123124b09&redirect_uri=https%3A%2F%2Fagentwanchat-oss.github.io%2FGym-Bro-%2F&scope=read%3Arecovery%20read%3Acycles%20read%3Asleep%20read%3Aworkout%20read%3Aprofile&state=khem_coupe_pt_2026" 
                    class="px-3 py-1.5 bg-[#00E676]/10 hover:bg-[#00E676]/20 border border-[#00E676]/40 text-[#00E676] rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-[#00E676]/10">
                     <i data-lucide="zap" class="w-3.5 h-3.5"></i>
                     <span>เชื่อมต่อ Whoop Realtime</span>
@@ -450,6 +450,10 @@
     </div>
 
     <script>
+        const WHOOP_CLIENT_ID = 'f560a0cd-46cc-4ae5-88e1-588123124b09';
+        const WHOOP_CLIENT_SECRET='***';
+        const WHOOP_REDIRECT_URI = 'https://agentwanchat-oss.github.io/Gym-Bro-/';
+
         const defaultWorkoutData = {
             dayA: { title: "DAY A: Chest, Shoulders & Triceps", exercises: [{ name: "Incline Dumbbell Press", targetSets: 3, targetReps: "8-12", sets: [{wt: 20, reps: 10, rpe: 8}, {wt: 22, reps: 9, rpe: 8.5}] }] },
             dayB: { title: "DAY B: Back & Biceps", exercises: [{ name: "Lat Pulldown (Cable)", targetSets: 4, targetReps: "8-12", sets: [{wt: 45, reps: 12, rpe: 8}] }] },
@@ -468,7 +472,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadFromLocalStorage();
-            checkWhoopOAuthHash();
+            checkWhoopOAuthCallback();
             lucide.createIcons();
             updateDateString();
             renderWhoopUI();
@@ -476,40 +480,62 @@
             initCharts();
         });
 
-        // Auto Sync Whoop Data when redirected back from Whoop Authorization with Client ID
-        function checkWhoopOAuthHash() {
-            const hash = window.location.hash;
-            if (hash && hash.includes('access_token')) {
-                const params = new URLSearchParams(hash.replace('#', '?'));
-                const token = params.get('access_token');
-                if (token) {
-                    localStorage.setItem('whoop_access_token', token);
-                    window.location.hash = '';
-                    fetchWhoopLiveDataDirect(token);
+        // Client-side automatic exchange of Whoop Auth Code -> Token -> Live Data
+        async function checkWhoopOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                console.log("Whoop Authorization Code received:", code);
+                document.getElementById('whoopBadgeLabel').textContent = "WHOOP SYNCING...";
+                try {
+                    const payload = new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        code: code,
+                        client_id: WHOOP_CLIENT_ID,
+                        client_secret: WHOOP_CLIENT_SECRET,
+                        redirect_uri: WHOOP_REDIRECT_URI
+                    });
+
+                    const res = await fetch('https://api.prod.whoop.com/oauth/oauth2/token', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: payload
+                    });
+
+                    const tokenData = await res.json();
+                    if (tokenData.access_token) {
+                        localStorage.setItem('whoop_access_token', tokenData.access_token);
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        fetchWhoopMetrics(tokenData.access_token);
+                    }
+                } catch (err) {
+                    console.error("Error exchanging code for Whoop token:", err);
                 }
             } else {
                 const savedToken = localStorage.getItem('whoop_access_token');
-                if (savedToken) fetchWhoopLiveDataDirect(savedToken);
+                if (savedToken) fetchWhoopMetrics(savedToken);
             }
         }
 
-        async function fetchWhoopLiveDataDirect(token) {
+        async function fetchWhoopMetrics(token) {
             try {
-                const res = await fetch('https://api.prod.whoop.com/developer/v1/recovery', {
+                const resRec = await fetch('https://api.prod.whoop.com/developer/v1/recovery', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const data = await res.json();
-                if (data && data.records && data.records.length > 0) {
-                    const latest = data.records[0].score;
+                const recData = await resRec.json();
+                if (recData && recData.records && recData.records.length > 0) {
+                    const latest = recData.records[0].score;
                     appState.whoop.recovery = latest.recovery_score || appState.whoop.recovery;
                     appState.whoop.hrv = Math.round(latest.hrv_rmssd_milli || appState.whoop.hrv);
                     appState.whoop.rhr = Math.round(latest.resting_heart_rate || appState.whoop.rhr);
+                    document.getElementById('whoopBadgeLabel').textContent = "WHOOP LIVE SYNCED";
                     renderWhoopUI();
                     saveToLocalStorage();
                     initCharts();
                 }
             } catch (err) {
-                console.log("Whoop Client Fetch Fallback:", err);
+                console.error("Error fetching Whoop metrics:", err);
             }
         }
 
